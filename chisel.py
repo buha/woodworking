@@ -12,10 +12,10 @@ def distance(p1, p2):
 r = 75
 a = 40
 h = -115
-t = 450
+t = 475
 
 # generate a bunch of gamma angles
-g = np.linspace(0, 90, 91)
+g = np.linspace(0, 90, 901)
 
 # equation of the chisel position / orientation
 m = -cotdg(g + a) 
@@ -28,6 +28,8 @@ yr = r * sindg(g)
 
 # computed lengths from chisel-stone to chisel-jig contact points
 lvalues = np.sqrt((xt - xr) ** 2 + (h - yr) ** 2)
+lmaxi = np.argmax(lvalues)
+lvalues = lvalues[:lmaxi] # discard values without physical meaning
 
 # deltas between these lengths and given tool length
 deltas = lvalues - t
@@ -40,6 +42,15 @@ l = lvalues[li]
 mtan = -cotdg(g[li])
 ctan = r / sindg(g[li])
 
+# compute tool length based on results
+point1 = [xr[li], yr[li]]
+point2 = [xt[li], h]
+tcomp = distance(point1, point2)
+if tcomp / t > 1.01:
+    print("computed t = {} mm".format(tcomp))
+    print("Couldn't find a solution.");
+    exit()
+
 # compute alpha based on results
 point1 = [xt[li], h]
 point2 = [xr[li], yr[li]]
@@ -50,8 +61,7 @@ C = distance(point3, point1)
 alpha = np.arccos((A ** 2 + B ** 2 - C ** 2) / 2 / A / B)
 alpha = alpha * 180 / np.pi
 if abs(alpha - a) > 1 or alpha != alpha:
-    print("alpha = {:.1f} deg".format(alpha))
-    print(lvalues)
+    print("computed alpha = {:.1f} deg".format(alpha))
     print("Couldn't find a solution.");
     exit()
 print("alpha = {:.1f} deg".format(alpha))
